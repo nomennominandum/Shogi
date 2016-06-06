@@ -1,12 +1,15 @@
-// Shogi.cpp : Definiert den Einstiegspunkt für die Konsolenanwendung.
+// Shogi.cpp : Definiert den Einstiegspunkt fÃ¼r die Konsolenanwendung.
 //
 
 #include "stdafx.h"
 #include "board.h"
 #include "MCTS.h"
+#include "timer.h"
 
 int main()
 {
+	Timer<> timer("overall");
+	auto lt = timer();
 	MCTS engine;
 	clock_t start;
 	start = clock();
@@ -28,7 +31,7 @@ int main()
 		cout << n;
 		cout << "Player " << (board1.move*(-1) + 1) / 2 << " wins" << endl;
 		sum = sum + n;
-	cout << "gebrauchte Zeit: " << (float)(clock() - start)/CLOCKS_PER_SEC << " durchgeführte Rollouts " << m;
+	cout << "gebrauchte Zeit: " << (float)(clock() - start)/CLOCKS_PER_SEC << " durchgefÃ¼hrte Rollouts " << m;
 	int x;
 	cin >> x;
     return 0;
