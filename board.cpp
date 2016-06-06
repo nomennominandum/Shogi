@@ -1,7 +1,15 @@
 #include "stdafx.h"
 #include "board.h"
+#include <stdexcept>
 
-
+enum Tokens : int {
+	BKing = -8,
+	WKing = 8,
+	BGold = -5,
+	WGold = 5,
+	BSilver = -4,
+	WSilver = 4
+}
 	board::board()
 	{
 		move = 1;
@@ -117,33 +125,36 @@
 		{
 			if (this->peacesCaptured[(this->move+1)/2][org[1] - 1] != 0) // Check ob Figur eingesetzt werden kann
 			{
-				if (this->position[dest[0]][dest[1]] != 0) // Zielfeld frei?
+				if (this->position[dest[0]][dest[1]] != 0) { // Zielfeld frei?
 					cout << "idiot"<<endl;
+					throw std::invalid_argument("designated target already occupied");
+				}
 				this->peacesCaptured[(this->move+1)/2][org[1] - 1] --;
 					this->position[dest[0]][dest[1]] = this->move*org[1];
 			}
 			else
 			{
 				cout << "moron";
+				throw invalid_argument("piece was not captured before");
 				return false;
 			}
 			
 		}
 		else
 		{
-			if (this->move*this->position[org[0]][org[1]] > 0) //Ursprungsfeld enth‰lt eine eigene Figur
+			if (this->move*this->position[org[0]][org[1]] > 0) //Ursprungsfeld enth√§lt eine eigene Figur
 			{
-				if (this->move*this->position[dest[0]][dest[1]] <= 0) //Zielfeld enth‰lt keine Eigene Figur
+				if (this->move*this->position[dest[0]][dest[1]] <= 0) //Zielfeld enth√§lt keine Eigene Figur
 				{
-					if (this->position[dest[0]][dest[1]] != 0) //Zielfeld enth‰lt eine gegnerische Figur
+					if (this->position[dest[0]][dest[1]] != 0) //Zielfeld enth√§lt eine gegnerische Figur
 					{
 						if (abs(this->position[dest[0]][dest[1]]) >= 100)
-							this->position[dest[0]][dest[1]] = this->position[dest[0]][dest[1]] / 100; //Wenn befˆrderte Figur geschlagen wird
+							this->position[dest[0]][dest[1]] = this->position[dest[0]][dest[1]] / 100; //Wenn bef√∂rderte Figur geschlagen wird
 						if (abs(this->position[dest[0]][dest[1]]) > 10)
-							this->position[dest[0]][dest[1]] = this->position[dest[0]][dest[1]] / 10; // Wenn Turm+, L‰ufer+ geschlagen wird
-						this->peacesCaptured[(this->move + 1) / 2][abs(this->position[dest[0]][dest[1]]) - 1] ++; //Geschlagene Figur zu den Geschlagenen Figuren hinzuf¸gen
+							this->position[dest[0]][dest[1]] = this->position[dest[0]][dest[1]] / 10; // Wenn Turm+, L√§ufer+ geschlagen wird
+						this->peacesCaptured[(this->move + 1) / 2][abs(this->position[dest[0]][dest[1]]) - 1] ++; //Geschlagene Figur zu den Geschlagenen Figuren hinzuf√ºgen
 					}
-					this->position[org[0]][org[1]] = 0; // Zug ausf¸hren
+					this->position[org[0]][org[1]] = 0; // Zug ausf√ºhren
 					this->position[dest[0]][dest[1]] = this->move*peace;
 				}
 				else
@@ -159,8 +170,8 @@
 			}
 				
 		}
-		this->promotePeace(peace, org, dest); // Kann eine Figur befˆrdert werden?
-		this->move = this->move*(-1); // Zugmarker ‰ndern
+		this->promotePeace(peace, org, dest); // Kann eine Figur bef√∂rdert werden?
+		this->move = this->move*(-1); // Zugmarker √§ndern
 		return true;
 	}
 
@@ -225,17 +236,14 @@
 
 	bool board::checkCheck(int position[9][9], vector<vector<int>> *moveVector)
 	{
-		vector<int> king;
+		int king[2];
 		if (!return_position_king(&king))
-			cout << "Kˆnig nicht gefunden!"<< endl;
+			cout << "K√∂nig nicht gefunden!"<< endl;
 		this->move = this->move *(-1);
 		returnPossibleMoves(position, &(*moveVector),0);
 		int m = (*moveVector).size();
-		//cout << m << endl;
 		for (int p = 0; p < m; p++)
 		{
-			//cout << "p "<< p << " size "<<(*moveVector)[p].size()<< " size +1 " << (*moveVector)[p+1].size();
-			//cout << " p2 "<<(*moveVector)[p][2] << " p3 "<<(*moveVector)[p][3] << endl;
 			if (((*moveVector)[p][2] == king[0]) && ((*moveVector)[p][3] == king[1]))
 			{
 				this->move = this->move*(-1);
@@ -260,11 +268,6 @@
 					//cout << "check but not mate" << endl;
 					return false;
 				}
-			//cout << "mate" << endl;
-			//if (move == -1)
-				//cout << "white wins" << endl;
-			//else
-				//cout << "black wins"<<endl;
 			return true;
 		}
 		//cout << "not check" << endl;
@@ -275,7 +278,7 @@
 		vector<vector<int>> moveVector;
 		moveVector.reserve(100);
 		returnPossibleMoves(position, &moveVector, 0);
-		moveVector.shrink_to_fit();
+		//moveVector.shrink_to_fit();
 		int n = moveVector.size();
 		vector<int> randVector;
 		randVector.reserve(n);
@@ -327,7 +330,7 @@
 		if (org[0] == 9)
 			return true;
 		int n = peace;
-		if (n>=100) //Befˆrderte Figuren ziehen wie ein Goldgeneral
+		if (n>=100) //Bef√∂rderte Figuren ziehen wie ein Goldgeneral
 			n = 5;
 		switch (n)
 		{
@@ -381,13 +384,13 @@
 			if (org[0] == dest[0])
 				return true;
 			break;
-		case 7: //L‰ufer
-			cout << "L‰ufer";
+		case 7: //L√§ufer
+			cout << "L√§ufer";
 			if (abs(dest[0] - org[0]) == abs(dest[1] - org[1]) )
 				return true;
 			break;
-		case 8: //Kˆnig
-			cout << "Kˆnig";
+		case 8: //K√∂nig
+			cout << "K√∂nig";
 			if (abs(dest[0] - org[0]) <= 1)
 				if (abs(dest[1] - org[1]) <= 1)
 					return true;
@@ -402,8 +405,8 @@
 			if (org[0] == dest[0])
 				return true;
 			break;
-		case 70: //L‰ufer+
-			cout << "L‰ufer+";
+		case 70: //L√§ufer+
+			cout << "L√§ufer+";
 			if (abs(dest[0] - org[0]) <= 1)
 				if (abs(dest[1] - org[1]) <= 1)
 					return true;
@@ -422,7 +425,7 @@
 		int temp;
 		if (peace < 8)
 				if (org[0] != 9)
-					if (org[0] * move >= (4 + 2 * move)*move) //Befˆrdern beim Rausziehen
+					if (org[0] * move >= (4 + 2 * move)*move) //Bef√∂rdern beim Rausziehen
 					{
 						//cout << "promote1";
 						//cout << "Do you want to promote your peace?" << endl;
@@ -431,14 +434,14 @@
 						temp = 1;
 						if (temp == 1)
 							if (peace <6)
-								position[dest[0]][dest[1]] = position[dest[0]][dest[1]] * 100; //Befˆrderung zum Goldgeneral
+								position[dest[0]][dest[1]] = position[dest[0]][dest[1]] * 100; //Bef√∂rderung zum Goldgeneral
 							else
-								position[dest[0]][dest[1]] = position[dest[0]][dest[1]] * 10; //Befˆrderung zur Dame
+								position[dest[0]][dest[1]] = position[dest[0]][dest[1]] * 10; //Bef√∂rderung zur Dame
 
 					}
 					else
 					{
-						if (dest[0] * move >= (4 + 2 * move)*move) // Befˆrdern beim Reinziehen
+						if (dest[0] * move >= (4 + 2 * move)*move) // Bef√∂rdern beim Reinziehen
 						{
 							//cout << "promote"<<dest[0]<< " " << (dest[0] * move >= (4 + 2 * move)*move)<<endl;
 							//cout << "Do you want to promote your peace?" << endl;
@@ -461,20 +464,20 @@
 	}
 
 	bool board::checkIfPeaceInbetween(int peace, int org[2], int dest[2])
-	{// ‹berpr¸fe ob die Felder die zwischen Ursprungsfeld und Zielfeld liegen leer sind
+	{// √úberpr√ºfe ob die Felder die zwischen Ursprungsfeld und Zielfeld liegen leer sind
 
 		if (org[0] == 9)
 			return true; //Figur wird eingesetzt
 		int n = peace;
-		if (n>=100) //Befˆrderte Figuren ziehen wie ein Goldgeneral
+		if (n>=100) //Bef√∂rderte Figuren ziehen wie ein Goldgeneral
 			n = 5;
 		switch (n)
 		{
 		case 1: //Bauer
-			return true; //f¸r Bauer kein Fehler mˆglich, da dieser nur 1 Feld zieht
+			return true; //f√ºr Bauer kein Fehler m√∂glich, da dieser nur 1 Feld zieht
 			break;
 		case 2: //Springer
-			return true;//Springer h¸pft
+			return true;//Springer h√ºpft
 			break;
 		case 3: //Lanze
 			cout << "Lanze";
@@ -499,13 +502,13 @@
 					if (position[org[0]][org[1] + (dest[1] - org[1]) / abs(dest[1] - org[1])*n] != 0)
 						return false;
 			break;
-		case 7: //L‰ufer
-			cout << "L‰ufer";
+		case 7: //L√§ufer
+			cout << "L√§ufer";
 			for (n = 1; n< abs(dest[0]-org[0]); n++)
 				if (position[org[0] + (dest[0] - org[0]) / abs(dest[0] - org[0])*n][org[1] + (dest[1] - org[1]) / abs(dest[1] - org[1])*n] != 0)
 					return false;
 			break;
-		case 8: //Kˆnig
+		case 8: //K√∂nig
 			return true;
 			break;
 		case 60: //Turm+
@@ -519,8 +522,8 @@
 					if (position[org[0]][org[1] + (dest[1] - org[1]) / abs(dest[1] - org[1])*n] != 0)
 						return false;
 			break;
-		case 70: //L‰ufer+
-			cout << "L‰ufer+";
+		case 70: //L√§ufer+
+			cout << "L√§ufer+";
 			for (n = 1; n< abs(dest[0] - org[0]); n++)
 				if (position[org[0] + (dest[0] - org[0]) / abs(dest[0] - org[0])*n][org[1] + (dest[1] - org[1]) / abs(dest[1] - org[1])*n] != 0)
 					return false;
@@ -537,7 +540,6 @@
 		(*moveVector).reserve(100);
 
 			for (int x = 0; x < 9; x++)
-//#pragma omp parallel for
 				for (int y = 0; y < 9; y++)
 				{
 					int field[2];
@@ -546,7 +548,7 @@
 					returnPossibleMovesPeace(field, position, &(*moveVector), flag);
 
 				}
-#pragma omp barrier			
+		
 		
 		//(*moveVector).shrink_to_fit;
 	}
@@ -556,7 +558,7 @@
 		int m = 0;
 		int peace = this->move*position[field[0]][field[1]];
 		int n = peace;
-		if (n >= 100) //Befˆrderte Figuren ziehen wie ein Goldgeneral
+		if (n >= 100) //Bef√∂rderte Figuren ziehen wie ein Goldgeneral
 		{
 			n = 5;
 		}
@@ -670,7 +672,7 @@
 			break;
 
 		case 6: //Turm
-			m = 0; //vorw‰rts
+			m = 0; //vorw√§rts
 			if (!out_of_bounds_error(field[0] + (m + 1) * this->move, field[1]))
 			while (this->move*position[field[0] + (m + 1)*this->move][field[1]] < 1)
 			{
@@ -684,7 +686,7 @@
 				if (out_of_bounds_error(field[0] + m * this->move, field[1]))
 					break;
 			}
-			m = 0; //r¸ckwerts
+			m = 0; //r√ºckwerts
 			if (!out_of_bounds_error(field[0] - (m + 1) * this->move, field[1]))
 			while (this->move*position[field[0] - (m + 1)*this->move][field[1]] < 1)
 			{
@@ -729,8 +731,8 @@
 	
 			break;
 
-		case 7: //L‰ufer
-			m = 0; //vorw‰rts rechts
+		case 7: //L√§ufer
+			m = 0; //vorw√§rts rechts
 			if (!out_of_bounds_error(field[0]+(m+1)*this->move, field[1] + (m + 1)))
 			while (this->move*position[field[0] + (m + 1)*this->move][field[1]+m+1] < 1)
 			{
@@ -744,7 +746,7 @@
 				if (out_of_bounds_error(field[0]+(m+1)*this->move, field[1] + m+1))
 					break;
 			}
-			m = 0; //vorw‰rts links
+			m = 0; //vorw√§rts links
 			if (!out_of_bounds_error(field[0] + (m + 1)*this->move, field[1] - (m + 1)))
 				while (this->move*position[field[0] + (m + 1)*this->move][field[1] - m + 1] < 1)
 				{
@@ -758,7 +760,7 @@
 					if (out_of_bounds_error(field[0] + (m + 1)*this->move, field[1] - m + 1))
 						break;
 				}
-			m = 0; //r¸ckwerts links
+			m = 0; //r√ºckwerts links
 			if (!out_of_bounds_error(field[0] - (m + 1)*this->move, field[1] - (m + 1)))
 				while (this->move*position[field[0] - (m + 1)*this->move][field[1] - m + 1] < 1)
 				{
@@ -772,7 +774,7 @@
 					if (out_of_bounds_error(field[0] - (m + 1)*this->move, field[1] - m + 1))
 						break;
 				}
-			m = 0; //r¸ckwerts rechts
+			m = 0; //r√ºckwerts rechts
 			if (!out_of_bounds_error(field[0] - (m + 1)*this->move, field[1] + (m + 1)))
 				while (this->move*position[field[0] - (m + 1)*this->move][field[1] + m + 1] < 1)
 				{
@@ -789,7 +791,7 @@
 			
 			break;
 
-		case 8: //Kˆnig
+		case 8: //K√∂nig
 			this->moveVorward(1,field[0], field[1], &(*moveVector), flag);
 			this->moveVorwardRight(1,field[0], field[1], &(*moveVector), flag);
 			this->moveVorwardLeft(1,field[0], field[1], &(*moveVector), flag);
@@ -805,7 +807,7 @@
 			this->moveVorwardLeft(1,field[0], field[1], &(*moveVector), flag);
 			this->moveBackwardRight(1,field[0], field[1], &(*moveVector), flag);
 			this->moveBackwardLeft(1,field[0], field[1], &(*moveVector), flag);
-			m = 0; //vorw‰rts
+			m = 0; //vorw√§rts
 			if (!out_of_bounds_error(field[0] + (m + 1) * this->move, field[1]))
 				while (this->move*position[field[0] + (m + 1)*this->move][field[1]] < 1)
 				{
@@ -819,7 +821,7 @@
 					if (out_of_bounds_error(field[0] + m * this->move, field[1]))
 						break;
 				}
-			m = 0; //r¸ckwerts
+			m = 0; //r√ºckwerts
 			if (!out_of_bounds_error(field[0] - (m + 1) * this->move, field[1]))
 				while (this->move*position[field[0] - (m + 1)*this->move][field[1]] < 1)
 				{
@@ -863,12 +865,12 @@
 				}
 			break;
 
-		case 70: //L‰ufer+
+		case 70: //L√§ufer+
 			this->moveVorward(1,field[0], field[1],&(*moveVector), flag);
 			this->moveRight(1,field[0], field[1], &(*moveVector), flag);
 			this->moveLeft(1,field[0], field[1], &(*moveVector), flag);
 			this->moveBackward(1,field[0], field[1], &(*moveVector), flag);
-			m = 0; //vorw‰rts rechts
+			m = 0; //vorw√§rts rechts
 			if (!out_of_bounds_error(field[0] + (m + 1)*this->move, field[1] + (m + 1)))
 				while (this->move*position[field[0] + (m + 1)*this->move][field[1] + m + 1] < 1)
 				{
@@ -882,7 +884,7 @@
 					if (out_of_bounds_error(field[0] + (m + 1)*this->move, field[1] + m + 1))
 						break;
 				}
-			m = 0; //vorw‰rts links
+			m = 0; //vorw√§rts links
 			if (!out_of_bounds_error(field[0] + (m + 1)*this->move, field[1] - (m + 1)))
 				while (this->move*position[field[0] + (m + 1)*this->move][field[1] - m + 1] < 1)
 				{
@@ -896,7 +898,7 @@
 					if (out_of_bounds_error(field[0] + (m + 1)*this->move, field[1] - m + 1))
 						break;
 				}
-			m = 0; //r¸ckwerts links
+			m = 0; //r√ºckwerts links
 			if (!out_of_bounds_error(field[0] - (m + 1)*this->move, field[1] - (m + 1)))
 				while (this->move*position[field[0] - (m + 1)*this->move][field[1] - m + 1] < 1)
 				{
@@ -910,7 +912,7 @@
 					if (out_of_bounds_error(field[0] - (m + 1)*this->move, field[1] - m + 1))
 						break;
 				}
-			m = 0; //r¸ckwerts rechts
+			m = 0; //r√ºckwerts rechts
 			if (!out_of_bounds_error(field[0] - (m + 1)*this->move, field[1] + (m + 1)))
 				while (this->move*position[field[0] - (m + 1)*this->move][field[1] + m + 1] < 1)
 				{
