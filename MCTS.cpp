@@ -49,7 +49,7 @@ void MCTS::makeRollout(board *tempBoard, vector<int> *moveVector)
 		n++;
 	}
 	(*moveVector)[5] = (*moveVector)[5] + 1;
-	(*moveVector)[4] = (*moveVector)[4] - Board.move;
+	(*moveVector)[4] = (*moveVector)[4] - Board.move*tempMove;
 	
 	
 }
