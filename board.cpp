@@ -1,5 +1,6 @@
 #include "stdafx.h"
 #include "board.h"
+#include "timer.h"
 #include <stdexcept>
 
 enum Tokens : int {
@@ -555,6 +556,8 @@ enum Tokens : int {
 
 	void board::returnPossibleMovesPeace(int field[2], int tempPosition[9][9], vector<vector<int>> *moveVector, int flag)
 	{
+		static Timer<> timer("returnPossibleMovesPeace");
+		auto lt = timer();
 		int m = 0;
 		int peace = this->move*position[field[0]][field[1]];
 		int n = peace;
